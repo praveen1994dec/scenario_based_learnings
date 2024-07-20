@@ -1,0 +1,159 @@
+pipeline {
+    agent any
+
+    environment {
+        // Environment variables
+        ANDROID_SDK_ROOT = "${env.HOME}/Android/Sdk"
+        PATH = "${env.ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${env.ANDROID_SDK_ROOT}/platform-tools:${env.PATH}"
+        DOCKER_IMAGE = "mycompany/myapp:${env.BUILD_ID}"
+    }
+
+    options {
+        // Keep builds for 30 days and show logs with timestamps
+        buildDiscarder(logRotator(daysToKeepStr: '30'))
+        timestamps()
+        timeout(time: 2, unit: 'HOURS')  // Timeout to prevent long-running builds
+    }
+
+    triggers {
+        // Trigger builds on changes in the SCM
+        pollSCM('H/5 * * * *')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout code from repository
+                checkout scm
+            }
+        }
+        
+        stage('Environment Setup') {
+            steps {
+                // Setting up environment like Java SDK, Android SDK, etc.
+                script {
+                    // Example script for setting up environment
+                    sh 'echo "Setting up environment"'
+                }
+            }
+        }
+        
+        stage('File System Scan') {
+            steps {
+                // Perform Trivy scan on the file system
+                sh 'trivy fs --exit-code 0 --severity HIGH,CRITICAL /'
+            }
+        }
+        
+        stage('Static Code Analysis') {
+            steps {
+                // Run code quality checks with SonarQube
+                withSonarQubeEnv('SonarQube') {
+                    sh './gradlew sonarqube'
+                }
+            }
+        }
+        
+        stage('Build') {
+            parallel {
+                stage('Backend Build') {
+                    steps {
+                        // Compile and build the backend services
+                        sh 'mvn clean install -DskipTests'
+                    }
+                }
+                stage('Frontend Build') {
+                    steps {
+                        // Compile and build the frontend application
+                        sh './gradlew assembleRelease'
+                    }
+                }
+            }
+        }
+        
+        stage('Test') {
+            parallel {
+                stage('Unit Tests') {
+                    steps {
+                        // Run unit tests
+                        sh './gradlew test'
+                    }
+                }
+                stage('Integration Tests') {
+                    steps {
+                        // Run integration tests
+                        sh './gradlew integrationTest'
+                    }
+                }
+                stage('API Tests') {
+                    steps {
+                        // Run API tests
+                        sh 'newman run api-tests/collection.json'
+                    }
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build Docker image
+                    sh 'docker build -t ${DOCKER_IMAGE} .'
+                }
+            }
+        }
+        
+        stage('Security Scans') {
+            stage('Container Scan') {
+                steps {
+                    // Run container security scans
+                    sh 'trivy image ${DOCKER_IMAGE}'
+                }
+            }
+        }
+        
+        stage('Publish Artifacts') {
+            steps {
+                // Publish artifacts to Nexus
+                nexusPublisher nexusInstanceId: 'nexus', nexusRepositoryId: 'maven-releases', packages: [
+                    [$class: 'MavenArtifact', artifactId: 'myapp', version: '1.0.0', packaging: 'jar']
+                ]
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                script {
+                    // Deploy Docker image to Kubernetes
+                    sh 'kubectl set image deployment/myapp myapp=${DOCKER_IMAGE}'
+                }
+            }
+        }
+        
+        stage('Post-Deployment Tests') {
+            steps {
+                // Run tests after deployment to ensure everything is working
+                sh 'newman run post-deploy-tests/collection.json'
+            }
+        }
+    }
+
+    post {
+        success {
+            // Notify success
+            slackSend channel: '#builds', message: "Build succeeded: ${env.BUILD_URL}"
+        }
+        failure {
+            // Notify failure
+            slackSend channel: '#builds', message: "Build failed: ${env.BUILD_URL}"
+        }
+        always {
+            // Archive artifacts and reports
+            archiveArtifacts artifacts: '**/target/*.jar, **/build/reports/**', allowEmptyArchive: true
+            junit '**/build/test-results/test/*.xml'
+            // Clean up workspace
+            cleanWs()
+        }
+    }
+}
+
