@@ -1,0 +1,25 @@
+# Use Tomcat base image with JDK 11
+FROM tomcat:9.0.59-jdk11-openjdk-slim
+
+LABEL maintainer="yourname@example.com"
+
+# Set environment variables if needed
+ENV MY_CUSTOM_VAR="custom_value"
+
+# Copy your application WAR file into Tomcat's webapps directory
+COPY target/java-hello-world.war /usr/local/tomcat/webapps/
+
+# Copy external configuration files if needed
+COPY config/application.properties /usr/local/tomcat/conf/
+
+# Optionally, install additional packages or perform other customizations
+# For example, installing curl
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Expose default Tomcat port
+EXPOSE 8080
+
+# Start Tomcat
+CMD ["catalina.sh", "run"]

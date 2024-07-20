@@ -1,0 +1,11 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Security Scanning') {
+            steps {
+                sh 'trivy --scan --exit-code 1'
+            }
+        }
+    }
+}

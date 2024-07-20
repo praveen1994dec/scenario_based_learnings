@@ -1,0 +1,13 @@
+# Use an appropriate base image with Tomcat and Java
+FROM tomcat:9-jre11-slim
+
+# Expose Tomcat port
+EXPOSE 8080
+
+# Set Docker labels
+LABEL maintainer="yourname@example.com"
+LABEL description="Tomcat server running Java web applications"
+
+# Command to run Tomcat
+CMD ["catalina.sh", "run"]
+

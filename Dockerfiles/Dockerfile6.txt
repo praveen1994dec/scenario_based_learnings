@@ -1,0 +1,34 @@
+# Stage 1: Build environment with Maven
+FROM maven:3.8.4-openjdk-11-slim AS build
+
+WORKDIR /app
+
+# Copy only the pom.xml to cache dependencies
+COPY pom.xml .
+
+# Fetch dependencies
+RUN mvn dependency:go-offline
+
+# Copy the source code
+COPY src ./src
+
+# Build the application
+RUN mvn package -DskipTests
+
+# Stage 2: Runtime environment with Tomcat
+FROM tomcat:9.0.59-jdk11-openjdk-slim
+
+# Create necessary directories
+RUN mkdir -p /usr/local/tomcat/conf/myapp
+
+# Copy external configuration files
+COPY config/application.properties /app/application.properties
+
+# Copy the built WAR file into Tomcat webapps directory
+COPY --from=build /app/target/java-hello-world.war /usr/local/tomcat/webapps/
+
+# Expose default Tomcat port
+EXPOSE 8080
+
+# Start Tomcat
+CMD ["catalina.sh", "run"]

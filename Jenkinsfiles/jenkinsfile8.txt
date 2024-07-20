@@ -1,0 +1,11 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Ansible Deployment') {
+            steps {
+                sh 'ansible-playbook deploy.yaml'
+            }
+        }
+    }
+}

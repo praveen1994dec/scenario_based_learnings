@@ -1,0 +1,11 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Backup and Restore') {
+            steps {
+                sh 'aws s3 sync ./data s3://backup-bucket/data'
+            }
+        }
+    }
+}

@@ -1,0 +1,20 @@
+# Use Tomcat 9 image with OpenJDK 11
+FROM tomcat:9-jre11-openjdk-slim
+
+# Install timezone data package (if not already included)
+RUN apt-get update && apt-get install -y tzdata
+
+# Set the timezone (example: Asia/Kolkata)
+ENV TZ=Asia/Kolkata
+
+# Remove existing applications in Tomcat webapps directory
+RUN rm -rf /usr/local/tomcat/webapps/*
+
+# Copy the WAR file from local filesystem into the container at the Tomcat webapps directory
+COPY ./target/java-hello-world.war /usr/local/tomcat/webapps/ROOT.war
+
+# Expose default Tomcat port
+EXPOSE 8080
+
+# Command to run Tomcat
+CMD ["catalina.sh", "run"]

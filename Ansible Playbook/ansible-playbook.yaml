@@ -1,0 +1,46 @@
+- name: Deploy Dockerized Application
+  hosts: your_servers  # Replace with your target server(s) or group from your Ansible inventory
+  become: true  # Run tasks with sudo
+  
+  tasks:
+    - name: Ensure Docker and Docker Compose are installed
+      apt:
+        name: 
+          - docker-ce
+          - docker-compose
+        state: present
+        update_cache: yes
+      become: true
+
+    - name: Pull Docker image from Docker Hub (if needed)
+      docker_image:
+        name: your-docker-image:latest  # Replace with your Docker image name and tag
+        source: pull
+
+    - name: Stop and remove any existing Docker container
+      docker_container:
+        name: your_container_name  # Replace with your container name
+        state: absent
+      ignore_errors: yes
+
+    - name: Deploy Docker container
+      docker_container:
+        name: your_container_name  # Replace with your container name
+        image: your-docker-image:latest  # Replace with your Docker image name and tag
+        state: started
+        restart_policy: always
+        ports:
+          - "8080:8080"  # Adjust port mapping as needed
+
+    - name: Wait for application to be reachable
+      wait_for:
+        host: localhost
+        port: 8080
+        state: started
+      delegate_to: localhost
+
+  handlers:
+    - name: Restart Docker container
+      docker_container:
+        name: your_container_name  # Replace with your container name
+        state: restarted

@@ -1,0 +1,11 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Monitor and Alert') {
+            steps {
+                sh './monitoring.sh'
+            }
+        }
+    }
+}

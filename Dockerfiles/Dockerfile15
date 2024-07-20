@@ -1,0 +1,23 @@
+# Use an appropriate base image with Tomcat and Java
+FROM tomcat:9-jre11-slim
+
+# Install timezone data package (if not already included)
+RUN apt-get update && apt-get install -y tzdata
+
+# Set the timezone (example: Asia/Kolkata)
+ENV TZ=Asia/Kolkata
+
+# Expose Tomcat port
+EXPOSE 8080
+
+# Create a directory to hold application data
+RUN mkdir /usr/local/tomcat/app_data
+
+# Copy the custom configuration files (if needed)
+# COPY config/* /usr/local/tomcat/conf/
+
+# Copy your WAR file into the container
+COPY ./target/java-hello-world.war /usr/local/tomcat/webapps/ROOT.war
+
+# Command to run Tomcat
+CMD ["catalina.sh", "run"]

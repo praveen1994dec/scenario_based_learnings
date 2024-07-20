@@ -1,0 +1,15 @@
+# Use the official Tomcat image from the Docker Hub
+FROM tomcat:9.0.54-jdk11-openjdk-slim
+
+# Copy the built WAR file to the webapps directory of Tomcat
+COPY target/java-hello-world.war /usr/local/tomcat/webapps/
+
+# Expose the default port for Tomcat
+EXPOSE 8080
+
+# Health check configuration
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+  CMD curl -f http://localhost:8080/ || exit 1
+
+# Start Tomcat server
+CMD ["catalina.sh", "run"]

@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout code from repository
+                git 'https://github.com/your/repository.git'
+            }
+        }
+        
+        stage('Static Code Analysis') {
+            steps {
+                // Example: Running SonarQube scanner
+                script {
+                    def scannerHome = tool 'SonarQube Scanner' // Assuming SonarQube Scanner is configured in Jenkins tools
+                    withSonarQubeEnv('SonarQube') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
+            }
+        }
+        
+        // Add more stages for build, test, and deploy as needed
+    }
+    
+    // Post-build actions, notifications, etc. can be added outside stages
+}

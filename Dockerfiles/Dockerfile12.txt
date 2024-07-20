@@ -1,0 +1,28 @@
+# Stage 1: Build environment (if applicable)
+FROM maven:3.8.4-openjdk-11-slim AS build
+
+WORKDIR /app
+
+# Copy only the pom.xml to cache dependencies
+COPY pom.xml .
+
+# Fetch dependencies
+RUN mvn dependency:go-offline
+
+# Copy the source code and build application (if applicable)
+COPY src ./src
+RUN mvn package -DskipTests
+
+# Stage 2: Runtime environment
+FROM openjdk:11-jre-slim
+
+WORKDIR /app
+
+# Copy initialization script
+COPY init.sh /app/init.sh
+
+# Make the script executable
+RUN chmod +x /app/init.sh
+
+# Run initialization script on container startup
+CMD ["/app/init.sh"]

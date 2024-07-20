@@ -1,0 +1,11 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Log Analysis') {
+            steps {
+                sh './analyze-logs.sh'
+            }
+        }
+    }
+}

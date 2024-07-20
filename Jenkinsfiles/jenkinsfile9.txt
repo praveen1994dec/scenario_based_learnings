@@ -1,0 +1,11 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Autoscaling Configuration') {
+            steps {
+                sh 'aws autoscaling update-auto-scaling-group --min-size 2 --max-size 5'
+            }
+        }
+    }
+}

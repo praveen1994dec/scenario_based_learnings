@@ -1,0 +1,11 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Security Compliance Check') {
+            steps {
+                sh './security-checks.sh'
+            }
+        }
+    }
+}

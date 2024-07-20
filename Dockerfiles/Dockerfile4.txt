@@ -1,0 +1,20 @@
+# Stage 1: Build stage with Maven
+FROM maven:3.8.4-openjdk-11-slim AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Copying src, compiling and building the application
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# Stage 2: Final stage with minimal base image
+FROM adoptopenjdk:11-jre-hotspot-focal AS runtime
+WORKDIR /app
+COPY --from=build /app/target/java-hello-world.war ./app.war
+
+# Expose the default port for Tomcat
+EXPOSE 8080
+
+# Start the application
+CMD ["java", "-jar", "./app.war"]
