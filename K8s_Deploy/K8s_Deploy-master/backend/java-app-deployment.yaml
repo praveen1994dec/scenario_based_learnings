@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: java-app-deployment-backend
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: java-app
+  template:
+    metadata:
+      labels:
+        app: java-app
+    spec:
+      containers:
+      - name: java-app-container
+        image: kushagraag/java-app-backend
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/config
+        - name: backend-storage
+          mountPath: /data
+      volumes:
+      - name: config-volume
+        configMap:
+          name: java-app-config
+      - name: backend-storage
+        persistentVolumeClaim:
+          claimName: backend-pvc
+
