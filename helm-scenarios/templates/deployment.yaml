@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "my-python-webapp.fullname" . }}
+  labels:
+    {{- include "my-python-webapp.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "my-python-webapp.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "my-python-webapp.name" . }}
+    spec:
+      containers:
+        - name: {{ include "my-python-webapp.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: my-storage
+              mountPath: /data # Path inside the container where the volume will be mounted
+      volumes:
+        - name: my-storage
+          persistentVolumeClaim:
+            claimName: my-persistent-volume-claim
+

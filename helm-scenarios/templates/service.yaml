@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "my-python-webapp.fullname" . }}
+spec:
+  type: NodePort  # Set service type to NodePort
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 5000
+      nodePort: {{ .Values.service.nodePort }}  # Optionally specify the nodePort
+  selector:
+    app: {{ include "my-python-webapp.name" . }}
+
