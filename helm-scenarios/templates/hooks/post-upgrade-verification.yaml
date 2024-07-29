@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: post-upgrade-verification
+  annotations:
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  template:
+    spec:
+      containers:
+        - name: verification
+          image: your-verification-image:latest
+          command: ["sh", "-c", "verify-deployment.sh"]
+      restartPolicy: Never
