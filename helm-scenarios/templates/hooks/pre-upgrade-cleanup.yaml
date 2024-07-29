@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pre-upgrade-cleanup
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  template:
+    spec:
+      containers:
+        - name: cleanup
+          image: your-cleanup-image:latest
+          command: ["sh", "-c", "cleanup-resources.sh"]
+      restartPolicy: Never
