@@ -1,0 +1,66 @@
+serviceAccount:
+  create: true
+  name: my-multi-pod-nodeport-multi-pod-chart-sa
+
+ingress:
+  enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: chart-example.local
+      paths: ["/"]
+  tls: []
+
+resources:
+  limits:
+    cpu: "500m"
+    memory: "256Mi"
+  requests:
+    cpu: "250m"`
+    memory: "128Mi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 30
+  timeoutSeconds: 5
+
+readinessProbe:
+  httpGet:
+    path: /readiness
+    port: http
+  initialDelaySeconds: 30
+  timeoutSeconds: 5
+
+service:
+  type: NodePort
+  port: 80
+
+replicaCount: 1
+
+pod1:
+  name: pod1
+  image:
+    repository: nginx
+    tag: stable
+  service:
+    type: NodePort
+    port: 80
+    nodePort: 30001
+
+pod2:
+  name: pod2
+  image:
+    repository: httpd
+    tag: latest
+  service:
+    type: NodePort
+    port: 80
+    nodePort: 30002

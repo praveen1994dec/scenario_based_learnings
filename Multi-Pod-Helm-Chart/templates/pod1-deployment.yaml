@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.pod1.name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.pod1.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.pod1.name }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name | default "default-service-account" }}
+      containers:
+      - name: {{ .Values.pod1.name }}
+        image: {{ .Values.pod1.image.repository }}:{{ .Values.pod1.image.tag }}
+        ports:
+        - containerPort: {{ .Values.pod1.service.port }}
+
