@@ -1,0 +1,4 @@
+# Environment-specific variables
+nginx_port: 8080
+server_name: mywebsite.com
+

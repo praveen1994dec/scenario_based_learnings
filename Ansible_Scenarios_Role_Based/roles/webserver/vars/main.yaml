@@ -1,0 +1,4 @@
+# Role-specific default variables
+nginx_port: 80
+server_name: localhost
+

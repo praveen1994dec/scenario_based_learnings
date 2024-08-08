@@ -1,0 +1,7 @@
+---
+- name: Setup and configure the web server
+  hosts: all
+  become: true  # Use this line to enable privilege escalation
+  roles:
+    - webserver
+

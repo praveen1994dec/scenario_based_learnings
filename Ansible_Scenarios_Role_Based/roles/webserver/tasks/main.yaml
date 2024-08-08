@@ -1,0 +1,34 @@
+---
+- name: Install Nginx
+  ansible.builtin.yum:
+    name: nginx
+    state: present
+
+- name: Ensure Nginx configuration directory exists
+  ansible.builtin.file:
+    path: /etc/nginx/conf.d
+    state: directory
+
+- name: Deploy Nginx main configuration
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+  notify: Reload Nginx
+
+- name: Copy custom error page
+  ansible.builtin.copy:
+    src: custom_404.html
+    dest: /usr/share/nginx/html/custom_404.html
+
+- name: Copy index.html
+  ansible.builtin.copy:
+    src: index.html
+    dest: /usr/share/nginx/html/index.html
+
+- name: Ensure Nginx is running
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+
+
