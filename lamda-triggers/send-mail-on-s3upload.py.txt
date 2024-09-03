@@ -1,0 +1,44 @@
+import json
+import boto3
+from botocore.exceptions import ClientError
+
+ses = boto3.client('ses')
+
+def lambda_handler(event, context):
+    bucket_name = event['Records'][0]['s3']['bucket']['name']
+    object_key = event['Records'][0]['s3']['object']['key']
+
+    subject = 'New S3 File Upload'
+    body = f"A new file has been uploaded to your S3 bucket:\n\nBucket: {bucket_name}\nFile: {object_key}"
+    
+    sender = 'sender@example.com'  # Replace with your verified email address
+    recipient = 'recipient@example.com'  # Replace with the recipient's email address
+
+    try:
+        response = ses.send_email(
+            Source=sender,
+            Destination={
+                'ToAddresses': [
+                    recipient
+                ]
+            },
+            Message={
+                'Subject': {
+                    'Data': subject
+                },
+                'Body': {
+                    'Text': {
+                        'Data': body
+                    }
+                }
+            }
+        )
+        return {
+            'statusCode': 200,
+            'body': json.dumps('Email sent successfully!')
+        }
+    except ClientError as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps(f'Error sending email: {e}')
+        }

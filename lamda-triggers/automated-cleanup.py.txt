@@ -1,0 +1,36 @@
+import boto3
+from datetime import datetime, timezone, timedelta
+import os
+
+s3 = boto3.client('s3')
+
+def lambda_handler(event, context):
+    bucket_name = 'your-bucket-name'  # Replace with your bucket name
+    days_old = 30  # Number of days to keep files
+
+    # Calculate the cutoff date
+    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days_old)
+
+    try:
+        # List all objects in the bucket
+        response = s3.list_objects_v2(Bucket=bucket_name)
+        
+        if 'Contents' in response:
+            for obj in response['Contents']:
+                last_modified = obj['LastModified']
+                if last_modified < cutoff_date:
+                    # Delete the object if it's older than the cutoff date
+                    s3.delete_object(Bucket=bucket_name, Key=obj['Key'])
+                    print(f"Deleted {obj['Key']} from {bucket_name}")
+        
+        return {
+            'statusCode': 200,
+            'body': 'Cleanup complete.'
+        }
+    
+    except Exception as e:
+        print(e)
+        return {
+            'statusCode': 500,
+            'body': f"Error: {e}"
+        }
