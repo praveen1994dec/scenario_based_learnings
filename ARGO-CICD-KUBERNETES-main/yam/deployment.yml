@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+  namespace: microservices
+spec:
+  template:
+    metadata:
+      labels:
+        app: app-deploy
+    spec:
+      containers:
+        - name: application
+          image: jeanpsv/kubernetes-simple-nodejs-example:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          args: ["npm", "start"]
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1000Mi
+            limits:
+              cpu: 2000m
+              memory: 2000Mi
+          env:
+            - name: MY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: my_own_secret
